@@ -18,6 +18,8 @@
 #include <version_string.h>
 #include <efi_loader.h>
 
+void led_control(const char *cmd, const char *name, const char *arg);
+
 static void run_preboot_environment_command(void)
 {
 	char *p;
@@ -58,6 +60,14 @@ void main_loop(void)
 		/* efi_init_early() already called */
 		if (efi_init_obj_list() == EFI_SUCCESS)
 			efi_launch_capsules();
+	}
+
+	if (env_get("failsafe") != NULL) {
+		env_set("failsafe", NULL);
+		env_save();
+
+		led_control("led", "system_led", "on");
+		run_command("httpd", 0);
 	}
 
 	run_command("glbtn", 0);
